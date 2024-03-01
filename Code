@@ -1,0 +1,674 @@
+using System;
+using System.Security.Cryptography;
+
+namespace ConsoleApp
+{
+    class Program
+    {
+        static void Straight_Meansurements_Method( float[] meansurements/*результаты измерений*/, float divisionVal/*цена деления*/, float DeviceError/*погрешность прибора*/ )
+        {
+            float AverageError = 0;//средняя погрешность
+
+            for (int i = 0; i < meansurements.Length; i++)
+            {
+                AverageError += meansurements[i];
+            }
+            AverageError /= meansurements.Length;
+
+
+            float[] RandomError = new float[meansurements.Length];//случайная погрешность
+
+            for (int i = 0; i < meansurements.Length; i++)
+            {
+                RandomError[i] = meansurements[i] - AverageError;
+            }
+
+            for (int i = 0; i < meansurements.Length; i++)
+            {
+                if (RandomError[i] > 0)
+                {
+                    continue;
+                }
+                else
+                {
+                    RandomError[i] *= -1;
+                }
+            }
+
+            float AverageRandomError = 0;//случайная средняя погрешность
+            for (int i = 0; i < meansurements.Length; i++)
+            {
+                AverageRandomError += RandomError[i];
+            }
+            AverageRandomError /= meansurements.Length;
+
+            float RandomMaxError = 0;
+            int kef = 0;
+            if (meansurements.Length == 3)
+                kef = 3;
+
+            else if (meansurements.Length == 5)
+                kef = 3;
+
+            else if (meansurements.Length == 10)
+                kef = 2;
+
+            else if (meansurements.Length == 15)
+                kef = 2;
+
+            else
+                kef = 2;
+
+            RandomMaxError = AverageRandomError * kef;
+
+            float AmountError = divisionVal / 2;
+            float AbsoluteError = RandomMaxError + DeviceError + AmountError;
+            float OtnositelnayaError = (AbsoluteError / AverageError) * 100;
+
+            for (int i = 0; i < meansurements.Length; i++)
+            {
+                Console.WriteLine("Случайная погрешность " + (i + 1) + " равна " + RandomError[i]);
+            }
+            Console.WriteLine("Средняя погрешность равна " + AverageError);
+            Console.WriteLine("Случайная максимальная погрешность равна " + RandomMaxError);
+            Console.WriteLine("--------------------------\t\n" + "Абсолютная погрешность равна " + AbsoluteError + "\t\nотносительная погрешность равна " + OtnositelnayaError + " %");
+        }
+
+        class borders
+        {
+            public float downborder;
+            public float highborder;
+        }
+
+        static void Borders_Method(Single[] ResultsX1, Single[] ResultsX2, float[,] Errors, string function)//Метод границ
+        {
+            borders Y = new borders();
+            borders X1 = new borders();
+            borders X2 = new borders();
+            Y.highborder = 0;
+            Y.downborder = 0;
+            X1.highborder = 0;
+            X2.highborder = 0;
+            X1.downborder = 0;
+            X2.downborder = 0;
+            float Ymeansurements = new float();
+            float DeltaY = new float();
+
+            float AverageResultX1 = 0;
+            for (int i = 0; i < ResultsX1.Length; i++)
+            {
+                AverageResultX1 += ResultsX1[i];
+            }
+            AverageResultX1 /= ResultsX1.Length;
+
+
+            float AverageResultX2 = 0;
+            for (int i = 0; i < ResultsX1.Length; i++)
+            {
+                AverageResultX2 += ResultsX2[i];
+            }
+
+
+
+            if (true)//для первой велечины
+            {
+                float AverageError = 0;//средняя погрешность
+
+                for (int i = 0; i < ResultsX1.Length; i++)
+                {
+                    AverageError += ResultsX1[i];
+                }
+                AverageError /= ResultsX1.Length;
+
+
+                float[] RandomError = new float[ResultsX1.Length];//случайная погрешность
+
+                for (int i = 0; i < ResultsX1.Length; i++)
+                {
+                    RandomError[i] = ResultsX1[i] - AverageError;
+                    if (RandomError[i] > 0)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        RandomError[i] *= -1;
+                    }
+                }
+
+                
+
+
+                float AverageRandomError = 0;//случайная средняя погрешность
+                for (int i = 0; i < ResultsX1.Length; i++)
+                {
+                    AverageRandomError += RandomError[i];
+                }
+                AverageRandomError /= ResultsX1.Length;
+
+                float RandomMaxError = 0;
+                int kef = 0;
+                if (ResultsX1.Length == 3)
+                    kef = 3;
+
+                else if (ResultsX1.Length == 5)
+                    kef = 3;
+
+                else if (ResultsX1.Length >= 10)
+                    kef = 2;
+                else
+                    kef = 2;
+
+
+                RandomMaxError = AverageRandomError * kef;
+
+
+                float AbsoluteError = RandomMaxError + Errors[0,0] + Errors[0,1];
+                X1.downborder = AverageResultX1 - AbsoluteError;
+                X1.highborder = AverageResultX2 + AbsoluteError;
+
+            }//ПЕРВАЯ ВЕЛИЧИНА
+
+
+
+            if (true)//ВТОРАЯ ВЕЛИЧИНЫ
+            {
+                float AverageError = 0;//средняя погрешность
+
+                for (int i = 0; i < ResultsX1.Length; i++)
+                {
+                    AverageError += ResultsX2[i];
+                }
+                AverageError /= ResultsX1.Length;
+
+
+                float[] RandomError = new float[ResultsX1.Length];//случайная погрешность
+
+                for (int i = 0; i < ResultsX1.Length; i++)
+                {
+                    RandomError[i] = ResultsX2[i] - AverageError;
+                    if (RandomError[i] > 0)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        RandomError[i] *= -1;
+                    }
+                }
+
+
+                float AverageRandomError = 0;//случайная средняя погрешность
+                for (int i = 0; i < ResultsX1.Length; i++)
+                {
+                    AverageRandomError += RandomError[i];
+                }
+                AverageRandomError /= ResultsX1.Length;
+
+                float RandomMaxError;
+                int kef;
+                if (ResultsX1.Length == 3)
+                    kef = 3;
+
+                else if (ResultsX1.Length == 5)
+                    kef = 3;
+
+                else if (ResultsX1.Length == 10)
+                    kef = 2;
+
+                else if (ResultsX1.Length == 15)
+                    kef = 2;
+
+                else
+                    kef = 2;
+
+                RandomMaxError = AverageRandomError * kef;
+                float AbsoluteError = RandomMaxError + Errors[1,0] + Errors[1,1];
+
+                X2.highborder = AverageResultX2 + AbsoluteError;
+                X2.downborder = AverageResultX2 - AbsoluteError;
+            }
+
+
+            switch (function)
+            {
+                case "1": // y = x1 + x2
+                    Y.downborder = X1.downborder + X2.downborder;
+                    Y.highborder = X1.highborder + X2.highborder;
+                    break;
+
+                case "2":// y = x1 - x2
+                    Y.downborder = X1.downborder - X2.downborder;
+                    Y.highborder = X1.highborder - X2.highborder;
+                    break;
+
+                case "3":// y = x1 * x2
+                    Y.downborder = X1.downborder * X2.downborder;
+                    Y.highborder = X1.highborder * X2.highborder;
+                    break;
+
+                case "4":// y = x1 / x2
+                    Y.downborder = X1.downborder / X2.downborder;
+                    Y.highborder = X1.highborder / X2.highborder;
+                    break;
+            }
+
+            Ymeansurements = (Y.highborder + Y.downborder) / 2;
+            DeltaY = (Y.highborder - Y.downborder) / 2;
+
+            Console.WriteLine($"Абсолютная погрешность - {DeltaY}");
+
+        }
+
+        class bord
+        {
+            public double downborder;
+            public double highborder;
+        }
+
+        static void Borders_Method_with_one_argument(Single[] ResultX, float DeviceErr, float DivisionVal, string func, int N)
+        {
+            bord Y = new bord();
+            bord X = new bord();
+
+            double Yism = 0;
+            double DeltaY = 0;
+
+            Y.downborder = 0;
+            Y.highborder = 0;
+            X.downborder = 0;
+            X.highborder = 0;
+
+            if (true)
+            {
+                float AverageError = 0;//средняя погрешность
+
+                for (int i = 0; i < ResultX.Length; i++)
+                {
+                    AverageError += ResultX[i];
+                }
+                AverageError /= ResultX.Length;
+
+
+                float[] RandomError = new float[ResultX.Length];//случайная погрешность
+
+                for (int i = 0; i < ResultX.Length; i++)
+                {
+                    RandomError[i] = ResultX[i] - AverageError;
+                }
+
+
+                float AverageRandomError = 0;//случайная средняя погрешность
+                for (int i = 0; i < ResultX.Length; i++)
+                {
+                    AverageRandomError += RandomError[i];
+                }
+                AverageRandomError /= ResultX.Length;
+
+                float RandomMaxError = 0;
+                int kef = 0;
+                if (ResultX.Length == 3)
+                    kef = 3;
+
+                else if (ResultX.Length == 5)
+                    kef = 3;
+
+                else if (ResultX.Length == 10)
+                    kef = 2;
+
+                else if (ResultX.Length == 15)
+                    kef = 2;
+
+                else
+                    kef = 2;
+
+                RandomMaxError = AverageRandomError * kef;
+
+                float AmountError = DivisionVal / 2;
+                float AbsoluteError = RandomMaxError + DeviceErr + AmountError;
+
+                float AverageResult = 0;
+                for (int i = 0; i < ResultX.Length; i++)
+                {
+                    AverageResult += ResultX[i];
+                }
+                AverageResult /= ResultX.Length;
+
+
+
+
+                X.downborder = AverageResult - AbsoluteError;
+                X.highborder = AverageResult + AbsoluteError;
+
+            }
+            switch (func)
+            {
+                case "5"://y = x^n 
+                    Y.downborder = Math.Pow(X.downborder, N);
+                    Y.highborder = Math.Pow(X.highborder, N);
+                    break;
+
+                case "6"://y = n root from X
+                    Y.downborder = Math.Sqrt(X.downborder);
+                    Y.highborder = Math.Sqrt(X.highborder);
+                    break;
+
+                case "7"://y = lg x
+                    Y.downborder = Math.Log10(X.downborder);
+                    Y.highborder = Math.Log10(X.highborder);
+                    break;
+
+                case "8"://y = sin x
+                    Y.downborder = Math.Sin(X.downborder);
+                    Y.highborder = Math.Sin(X.highborder);
+                    break;
+
+                case "9"://y = cos x
+                    Y.downborder = Math.Cos(X.downborder);
+                    Y.highborder = Math.Cos(X.highborder);
+                    break;
+
+                case "10"://y = tg x
+                    Y.downborder = Math.Tan(X.downborder);
+                    Y.highborder = Math.Tan(X.highborder);
+                    break;
+            }
+
+            Yism = (Y.downborder + Y.highborder) / 2;
+            DeltaY = (Y.highborder - Y.downborder) / 2;
+
+            Console.WriteLine($"Значение измеряемой величины -{Yism}\t\nАбсолютная погрешность{DeltaY}");
+
+        }
+
+        class Variable
+        {
+            public float Summa;
+            public float SquaredSumma;
+            public float AverageValue;
+            public float SquaredAveragevalue;
+            public float S;
+        }
+
+        static void Square(float[] ResultsX, float[] ResultsY)
+        {
+            double DeltaAlpha;
+            double DeltaBetta;
+            float Alpha;
+            float Betta;
+            Variable XY = new Variable();
+            Variable X = new Variable();
+            Variable Y = new Variable();
+
+
+            for (int i = 0; i < ResultsX.Length; i++)
+            {
+                X.Summa += ResultsX[i];
+                X.SquaredSumma += ResultsX[i] * ResultsX[i];
+                XY.Summa += ResultsX[i] * ResultsY[i];
+            }
+            X.AverageValue = X.Summa / ResultsY.Length;
+            X.SquaredAveragevalue = X.AverageValue * X.AverageValue;
+
+
+            for (int i = 0; i < ResultsY.Length; i++)
+            {
+                Y.Summa += ResultsY[i];
+                Y.SquaredSumma += ResultsY[i] * ResultsY[i];
+            }
+            Y.AverageValue = Y.Summa / ResultsY.Length;
+            Y.SquaredAveragevalue = Y.AverageValue * Y.AverageValue;
+
+            Alpha = (ResultsY.Length * XY.Summa) - (X.Summa * Y.Summa);
+            Alpha /= (ResultsY.Length * X.SquaredSumma) - (X.Summa * X.Summa);
+
+            Betta = (Y.Summa - (Alpha * X.Summa)) / ResultsX.Length;
+
+            X.S = (X.SquaredSumma / ResultsX.Length) - (X.SquaredAveragevalue);
+
+            Y.S = (Y.SquaredSumma / ResultsY.Length) - (Y.SquaredAveragevalue);
+
+            DeltaAlpha = (Y.S) - (X.S * (Alpha * Alpha));
+            DeltaAlpha /= (X.S) * (ResultsX.Length - 2);
+            DeltaAlpha = 2 * Math.Sqrt(DeltaAlpha);
+
+            DeltaBetta = X.S + X.SquaredAveragevalue;
+            DeltaBetta = Math.Sqrt(DeltaBetta) * DeltaAlpha;
+
+            Console.WriteLine($"Погрешность величины A - {DeltaAlpha}\t\bПогрешность величины В - {DeltaBetta}");
+
+        }
+
+        static void SquareBeq0(float[] ResultsX, float[] ResultsY, float DivVal, float DevErr)
+        {
+            Variable X = new Variable();
+            Variable Y = new Variable();
+            Variable XY = new Variable();
+
+            double Alpha;
+            double DeltaAlpha = 0;
+            double Standart;//стандартное отклонение 
+
+            for (int i = 0; i < ResultsX.Length; i++)
+            {
+                X.Summa += ResultsX[i];
+                X.SquaredSumma += ResultsX[i] * ResultsX[i];
+                Y.Summa += ResultsY[i];
+                Y.SquaredSumma += ResultsY[i] * ResultsY[i];
+                XY.Summa += ResultsX[i] * ResultsY[i];
+            }
+
+            Alpha = (ResultsX.Length * XY.Summa) - (X.Summa * Y.Summa);
+            Alpha /= (ResultsX.Length * X.SquaredSumma) - (X.Summa * X.Summa);
+
+            Standart = (Y.SquaredSumma) / (X.SquaredSumma - (Alpha * Alpha));
+
+            if (ResultsX.Length >= 10)
+            {
+                DeltaAlpha = 3 * Standart;
+            }
+            else if (ResultsX.Length == 5)
+            {
+                DeltaAlpha = 5 * Standart;
+            }
+
+            Console.WriteLine($"{DeltaAlpha + (DivVal / 2) + DevErr}");
+
+        }
+
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Выберите способ, для вычисления погрешности:\t\n1.метод наименьших квадратов\t\n2.метод границ\t\n3.метод прямых измерений");
+            char method = Convert.ToChar(Console.ReadLine());
+
+
+            if (method == '1')//метод наименьших квадратов
+            {
+                Console.WriteLine("В урванении вида y = ax + b (где Х и Y известные величины, а А и B - величины, погрешность которых надо найти) коэффицент b = 0?(Да или Нет)");
+
+                string str = Console.ReadLine();
+
+                if (str == "Да" || str == "да" || str == " Да" || str == " да" || str == "да " || str == "Да " || str == " Да " || str == " да ")
+                {
+
+                    Console.WriteLine("Введите количество измерений величин Y,X (y = ax+b)");
+                    int quantityY = int.Parse(Console.ReadLine());
+
+                    float[] ResultsY = new float[quantityY];
+                    Console.WriteLine("Первая величина Y");
+                    for (int i = 0; i < quantityY; i++)
+                    {
+                        Console.WriteLine("Введите результаты измерения номер " + (i + 1));
+                        ResultsY[i] = Single.Parse(Console.ReadLine());
+                    }
+
+
+                    float[] ResultsX = new float[quantityY];
+                    Console.WriteLine("Вторая величина X");
+                    for (int i = 0; i < quantityY; i++)
+                    {
+                        Console.WriteLine("Введите результаты измерения номер " + (i + 1));
+                        ResultsX[i] = Single.Parse(Console.ReadLine());
+                    }
+
+                    Console.WriteLine("Введите инструментальную погрешность ");
+                    Single DeviceError = Single.Parse(Console.ReadLine());
+
+                    Console.WriteLine("Введите цену деления ");
+                    Single DivisionValue = Single.Parse(Console.ReadLine());
+
+
+                    SquareBeq0(ResultsX, ResultsY, DivisionValue, DeviceError);
+
+                }
+
+                else if (str == "Нет" || str == "нет" || str == "Нет " || str == "нет " || str == " Нет" || str == " нет" || str == " Нет " || str == " нет ")
+                {
+                    Console.WriteLine("Введите количество измерений величин Y,X (y = ax+b)");
+                    int quantityY = int.Parse(Console.ReadLine());
+
+                    float[] ResultsY = new float[quantityY];
+                    Console.WriteLine("Первая величина Y");
+                    for (int i = 0; i < quantityY; i++)
+                    {
+                        Console.WriteLine("Введите результаты измерения номер " + (i + 1));
+                        ResultsY[i] = Single.Parse(Console.ReadLine());
+                    }
+
+                    float[] ResultsX = new float[quantityY];
+                    Console.WriteLine("Вторая величина X");
+                    for (int i = 0; i < quantityY; i++)
+                    {
+                        Console.WriteLine("Введите результаты измерения номер " + (i + 1));
+                        ResultsX[i] = Single.Parse(Console.ReadLine());
+                    }
+
+                    Square(ResultsX, ResultsY);
+                }
+
+
+            }
+
+            else if (method == '2')//метод границ
+            {
+                Console.WriteLine("Выберите вид функции:\t\n1.y = x1 + x2\t\n2.y = x1 - x2\t\n3.y = x1 * x2\t\n4.y = x1 / x2\t\n5.y = x^n\t\n6.y = n root from x\t\n7.y = lg x\t\n8.y = sin x\t\n9.y = cos x\t\n10.y = tg x");
+                string func = Console.ReadLine();
+
+
+                if (func == "1" || func == "2" || func == "3" || func == "4")
+                {
+                    int number;
+                    float[,] Error = new float[2,2];
+
+                    //First value
+                    Console.WriteLine("Введите количество измерений велечин");
+
+                    number = int.Parse(Console.ReadLine());
+                    Single[] FirstResults = new Single[number];
+
+                    Console.WriteLine("Первая величина Х1");
+                    for (int i = 0; i < number; i++)
+                    {
+                        Console.WriteLine("Введите результаты " + (i + 1) + "-го" + " измерения ");
+                        FirstResults[i] = Single.Parse(Console.ReadLine());
+                    }
+
+                    Console.WriteLine("Введите погрешность прибора");
+                    float DeviceError = Single.Parse(Console.ReadLine());
+                   
+                    Console.WriteLine("Введите цену деления");
+                    float DivisionValue = Single.Parse(Console.ReadLine());
+
+                    Error[0,0] = DivisionValue / 2;
+                    Error[0, 1] = DeviceError;
+
+                    //вторая велечина
+
+                    Single[] SecondResults = new Single[number];
+                    Console.WriteLine("Вторая величина Х2");
+                    for (int i = 0; i < number; i++)
+                    {
+                        Console.WriteLine("Введите результаты " + (i + 1) + "-го" + " измерения ");
+                        SecondResults[i] = Single.Parse(Console.ReadLine());
+                    }
+
+                    Console.WriteLine("Введите погрешность прибора");
+                    float DeviceError2 = Single.Parse(Console.ReadLine());
+
+                    Console.WriteLine("Введите цену деления");
+                    float DivisionValue2 = Single.Parse(Console.ReadLine());
+
+                    Error[1, 0] = DivisionValue / 2;
+                    Error[1, 1] = DeviceError;
+
+
+                    Borders_Method(FirstResults, SecondResults, Error, func);
+                }
+
+                else if (func == "5" || func == "6" || func == "7" || func == "8" || func == "9" || func == "10")
+                {
+                    int N = 0;
+
+                    if (func == "5" || func == "6")
+                    {
+                        Console.WriteLine("Чему равно N");
+                        N = int.Parse(Console.ReadLine());
+                    }
+
+
+                    int number;
+                    Console.WriteLine("Введите количество измерений велечины");
+
+                    number = int.Parse(Console.ReadLine());
+                    Single[] Results = new Single[number];
+
+
+                    for (int i = 0; i < number; i++)
+                    {
+                        Console.WriteLine("Введите результаты " + (i + 1) + "-го" + " измерения ");
+                        Results[i] = Single.Parse(Console.ReadLine());
+                    }
+
+                    Console.WriteLine("Введите погрешность прибора");
+                    float DeviceError = Single.Parse(Console.ReadLine());
+
+                    Console.WriteLine("Введите цену деления");
+                    float DivisionValue = Single.Parse(Console.ReadLine());
+
+
+
+                    Borders_Method_with_one_argument(Results, DeviceError, DivisionValue, func, N);
+                }
+
+            }
+
+
+            else if (method == '3')//метод прямых измерений
+            {
+
+                Console.WriteLine("Введите количество измерений");
+                int quantity_of_measurements = int.Parse(Console.ReadLine());
+
+                Console.WriteLine("введите результаты измерений(округлите до сотых):");
+                Single[] measurement = new Single[quantity_of_measurements];
+
+                for (int i = 0; i < quantity_of_measurements; i++)
+                {
+                    Console.WriteLine("Введите результаты измерения номер " + (i + 1));
+                    measurement[i] = Single.Parse(Console.ReadLine());
+                }
+
+                Console.WriteLine("Введите цену деления");
+                Single div_val = Single.Parse(Console.ReadLine());
+
+                Console.WriteLine("Введите погрешность прибора");
+                Single device_error = Single.Parse(Console.ReadLine());
+
+                Straight_Meansurements_Method( measurement, div_val, device_error);
+            }
+
+            Console.ReadLine();
+        }
+
+    }
+}
